@@ -6,6 +6,8 @@ import collections
 import heapq
 import sys
 import io
+
+##File Compressor. Input path of your .txt file. 
 def Compressor(path):
     with io.open(path,"rU",encoding='windows-1252') as f:
         data=f.read()
@@ -15,6 +17,7 @@ def Compressor(path):
     for each in freq:
         heapTree.append([freq[each],[each,""]])
 
+    #huffman tree creator for compressor
     heapq.heapify(heapTree)
     while len(heapTree) != 1:
         lower = heapq.heappop(heapTree)
@@ -30,7 +33,6 @@ def Compressor(path):
 
     for each in heapTree:
         heapTreeDict[each[0]]=each[1]
-
 
     indList = heapTreeDict
 
@@ -59,6 +61,7 @@ def Compressor(path):
 
     print("struct..")
 
+#canonical Huffman Tree Maker. gets the tree order from the compressed file and recreates the tree again.
 def resIndex(freq):
     heapTree=[]
     for each in freq:
@@ -82,7 +85,7 @@ def resIndex(freq):
     print("Reconstructing the heap tree..")
     return heapTreeDict
 
-
+#final decoder, string recreation and writing on file again.
 def decoder(resStr,indexData,path):
     print(indexData)
     orderDir=resIndex(indexData)
@@ -94,6 +97,8 @@ def decoder(resStr,indexData,path):
                 f.write(orderDir[finishStr].encode("windows-1252"))
                 finishStr=""
 
+                
+##Decompressor Alg. Input the path of your file to be decompressed.                
 def Decompresor(path):
     with open(path, "rb") as f:
         f.seek(0)
@@ -101,7 +106,7 @@ def Decompresor(path):
         f.seek(0)
         indexData=f.read(start-1).decode("windows-1252")
     print("read")
-
+    
     with open(path, "rb") as f:
         limit=len(f.read())
         resStr=""
@@ -113,7 +118,6 @@ def Decompresor(path):
 
     for each in range(len(resArr)):
         resArr[each]=resArr[each][1:]
-
 
     resStr="".join(resArr)
     indexData=ast.literal_eval(indexData)
