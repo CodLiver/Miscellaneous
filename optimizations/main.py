@@ -7,7 +7,7 @@ from fractions import *
 
 def loadGraph(name):
     #read
-    with open(name,"r") as f:
+    with open(name+".graph","r") as f:
         data=f.readlines()
         G=nx.Graph().to_undirected()
         N=len(eval(data[0]))
@@ -25,7 +25,7 @@ def randomGraph(N,p):
     G=nx.Graph().to_undirected()
     for each in range(N):
         G.add_node(each)
-        for eacher in range(each,N):
+        for eacher in range(each+1,N):
             if random.random()<p:
                 G.add_edge(each,eacher)
 
@@ -101,7 +101,7 @@ def shannon(G,fulRes):
     subsets=list(chain.from_iterable(combinations(range(len(nodeList)), size) for size in range(0,len(range(len(nodeList))))))#subsetCreator(range(len(nodeList)))
     subsets=[frozenset(e) for e in subsets]+[frozenset(nodeList)]
     initVarList = LpVariable.dicts("subsets",range(len(subsets)),lowBound=0)
-
+    # print(subsets)
     subCond2=set()
     varSet2=[]
     for each in (nodeList):
@@ -112,15 +112,17 @@ def shannon(G,fulRes):
         if changed!=len(subCond2):
             varSet2.append([initVarList[subsets.index(neach)],initVarList[subsets.index(n)]])
 
-    cond2=subCond2
+    # cond2=subCond2
 
     if len(nodeList)>=8:
         c2=time.time()
         print("condition 2 finished:",round(c2-starting,3),"sec")
         print()
-    subCond3=set()
-    varSet3=[]
-    subCond4=set()
+
+
+    # subCond3=set()#del
+    # varSet3=[]#del
+    #subCond4=set()
     varSet4=[]
 
     # print("len of subs",len(subsets))
@@ -129,34 +131,36 @@ def shannon(G,fulRes):
         for eachT in range(eachS+1,len(subsets)-1):#T
             s=subsets[eachS]
             t=subsets[eachT]
-            query=frozenset([t,s])
-            if s.issubset(t) and not query in cond2 and len(query)>1:
-                changed=len(subCond3)
-                subCond3.add(query)
-                if changed!=len(subCond3):
-                    varSet3.append([initVarList[subsets.index(t)],initVarList[subsets.index(s)]])
+            # query=frozenset([t,s])#del---
+            # if s.issubset(t) and not query in subCond2 and len(query)>1:
+            #     changed=len(subCond3)
+            #     subCond3.add(query)
+            #     if changed!=len(subCond3):
+            #         varSet3.append([initVarList[subsets.index(t)],initVarList[subsets.index(s)]])#del----
+            # ???????????????????????????????????????????????????
 
             # if s.issubset(t):
             #     query=frozenset([t,s])
             #     if not query in cond2 and len(query)>1:
             #         changed=len(subCond3)
             #         subCond3.add(query)
-            #         if changed!=len(subCond3):
+            #         if changed!=len(subCondr3):
             #             varSet3.append([initVarList[subsets.index(t)],initVarList[subsets.index(s)]])
 
             ##4th cond
-            u=s.union(t)
-            inter=s.intersection(t)
-            query=frozenset([s,t,u,inter])
-            if not len(query)<=2:
-                changed=len(subCond4)
-                subCond4.add(query)
-                if changed!=len(subCond4):
-                    varSet4.append([initVarList[subsets.index(s)],initVarList[subsets.index(t)],initVarList[subsets.index(u)],initVarList[subsets.index(inter)]])
+            if not s.issubset(t):
+                u=s.union(t)
+                inter=s.intersection(t)
+                #query=frozenset([s,t,u,inter])
+                #if not len(query)<=2:
+                    #changed=len(subCond4)
+                #subCond4.add(query)
+                    #if changed!=len(subCond4):
+                varSet4.append([initVarList[subsets.index(s)],initVarList[subsets.index(t)],initVarList[subsets.index(u)],initVarList[subsets.index(inter)]])
 
     if len(nodeList)>=8:
         c34=time.time()
-        print("condition 3,4 finished in:",round(c34-c2,3),"sec")
+        print("condition 4 finished in:",round(c34-c2,3),"sec")
         print()
     prob = LpProblem("Maximum Shannon Entropy", LpMaximize)
     prob+= initVarList[len(initVarList)-1], "objective func"
@@ -171,8 +175,8 @@ def shannon(G,fulRes):
         prob+= each[0]-each[1]==0
 
     #cond2
-    for each in varSet3:
-        prob+= each[0]-each[1]>=0
+    # for each in varSet3:#del
+    #     prob+= each[0]-each[1]>=0#del
 
     #cond3
     for each in varSet4:
@@ -182,6 +186,9 @@ def shannon(G,fulRes):
         print("LP problem was created in",round(time.time()-c34,3),"sec")
         print()
     # print("cond done")
+
+
+    # print(prob)
     status = prob.solve()
 
     print("status:",LpStatus[prob.status])
@@ -266,21 +273,21 @@ type:
 
 `quit` to quit the program.
 
-`clique NAME.graph -ld` OR `clique N p` OR `clique N -m` calculates the Fractional Clique Cover (FCC) [1] number of:
+`clique NAME -ld` OR `clique N p` OR `clique N -m` calculates the Fractional Clique Cover (FCC) [1] number of:
 
--> a graph named `NAME` to load the graph.
+-> a graph named `NAME` to load the graph (without extention (.graph will be added)).
 -> a random graph with `N` amount of nodes and `p` probability of edge.
 -> `-m` is to create graph manually instead of randomly.
 
-`shannon NAME.graph -ld` OR `shannon N p` OR `shannon N -m` calculates the Shannon Entropy (SE) [1] of
+`shannon NAME -ld` OR `shannon N p` OR `shannon N -m` calculates the Shannon Entropy (SE) [1] of
 
--> a graph named `NAME` to load the graph.
+-> a graph named `NAME` to load the graph (without extention (.graph will be added)).
 -> a random graph with `N` amount of nodes and `p` probability of edge.
 -> `-m` is to create graph manually instead of randomly.
 
-`check NAME.graph -ld` OR `check N p` OR `check N -m` calculates the SE and FCC of
+`check NAME -ld` OR `check N p` OR `check N -m` calculates the SE and FCC of
 
--> a graph named `NAME` to load the graph.
+-> a graph named `NAME` to load the graph (without extention (.graph will be added)).
 -> a random graph with `N` amount of nodes and `p` probability of edge.
 -> `-m` is to create graph manually instead of randomly.
 
@@ -329,13 +336,16 @@ def main():
                 G=AddGraph(answer)#randomGraph(5,0.4)
                 pi=clique(G,fulRes)
                 n=shannon(G,fulRes)
-                print(Fraction(n).limit_denominator(100),"+",Fraction(pi).limit_denominator(100),">=",len(G.nodes()),"satisfies:",(n+pi)>=(len(G.nodes())))
+
+                print("shannon + clique* >= nodeAmount")
+                print(Fraction(n).limit_denominator(100),"+",Fraction(pi).limit_denominator(100),">=",len(G.nodes()),"satisfies:",Fraction(pi+n).limit_denominator(100)>=(len(G.nodes())))
             elif answer[0].lower()=="help":
                 print(help)
             elif answer[0].lower()=="q":
                 break
             answer=input("what would you like to do? [help, shannon .. , clique .., check .., q] ").split(" ")
-    except:
+    except: #e
+        # print(e)
         print("Incorrect sequence, please refer `help`. Check if any typos or the graph name entered correctly.")
         main()
 
