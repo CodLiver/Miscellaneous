@@ -143,23 +143,23 @@ for each in range(len(time)-1):#0
 #zyx
 #zxy-
 
-resx=[]
-resy=[]
-resz=[]
+resxx=[]
+resyx=[]
+reszx=[]
 # for each in estimate:
 #     ress.append(toEuler(each))
 
 "Phi"
 for each in estimate:
-    resx.append(toEuler(each)[2])#
-    resy.append(-toEuler(each)[1])#- is important
-    resz.append(toEuler(each)[0])#
+    resxx.append(toEuler(each)[2])#
+    resyx.append(-toEuler(each)[1])#- is important
+    reszx.append(toEuler(each)[0])#
 
-plt.plot(time,np.rad2deg(resx),label="phi",color="red")#wrong spikes
-plt.plot(time,np.rad2deg(resy),label="theta",color="green")#semi
-plt.plot(time,np.rad2deg(resz),label="psi",color="purple")#correct
+plt.plot(time,np.rad2deg(resxx),label="phiq2",color="black")#wrong spikes
+plt.plot(time,np.rad2deg(resyx),label="thetaq2",color="blue")#semi
+plt.plot(time,np.rad2deg(reszx),label="psiq2",color="yellow")#correct
 plt.legend()
-plt.show()
+# plt.show()
 
 """
 
@@ -181,7 +181,9 @@ for each in estimate:
 
 globalA=[]
 for each in range(len(acceM)):
-    avt=toQuaternions(acceX[each+1],acceY[each+1],acceZ[each+1],theta[each])
+    t=time[each+1]-time[each]
+    calc=t*gyroM[each]#may change?
+    avt=toQuaternions(acceX[each+1],acceY[each+1],acceZ[each+1],calc)#theta[each]
     # globalA.append(conjVquat(conjQ[each],acceM[each],quaternions[each]))#
     # last-globalA.append(qProd(qProd(conjQ[each],avt),quaternions[each]))#conjVquat(conjQ[each],acceM[each],quaternions[each]))#
     globalA.append(qProd(qProd(newconjQ[each],avt),estimate[each]))
@@ -215,7 +217,7 @@ for each in toEuAcce:
 # print(phi)
 
 "comp filter for acce correction"
-alpha=0.001#0.0001
+alpha=0.01#0.0001
 goodestimate=[]
 for each in range(len(time)-1):#0
     qvt=toQuaternions(project[each][2],0,-project[each][0],-alpha*phi[each])#x
@@ -233,8 +235,8 @@ for each in goodestimate:
     resy.append(-toEuler(each)[1])#- is important
     resz.append(toEuler(each)[0])#
 
-plt.plot(time[1:],np.rad2deg(resx),label="phi",color="red")#wrong spikes
-plt.plot(time[1:],np.rad2deg(resy),label="theta",color="green")#semi
-plt.plot(time[1:],np.rad2deg(resz),label="psi",color="purple")#correct
+plt.plot(time[1:],np.rad2deg(resx),label="phiq3",color="red")#wrong spikes
+plt.plot(time[1:],np.rad2deg(resy),label="thetaq3",color="green")#semi
+plt.plot(time[1:],np.rad2deg(resz),label="psiq3",color="purple")#correct
 plt.legend()
 plt.show()
