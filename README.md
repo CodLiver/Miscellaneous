@@ -16,6 +16,6 @@ For coursework: The aim is to devise an algorithm to solve Shannon Entropy, Frac
 
 4. Contemporary Computer Science III (double), Virtual Reality
 
-For coursework: The aim is to develop a headset tilt & yaw correction, quaternion multiplication, by using gyroscope,accelerometer and magnetometer (IMU) data. Used/referenced paper:
+For coursework: The aim is to develop a headset tilt & yaw correction, quaternion multiplication, by using gyroscope,accelerometer and magnetometer (IMU) data. Implemented/referenced paper:
 
 LAVALLE, S. M., YERSHOVA, A., KATSEV, M., AND ANTONOV, M. Head tracking for the oculus rift. In *Robotics and Automation (ICRA), 2014 IEEE International Conference on* (2014), IEEE, pp. 187–194.
