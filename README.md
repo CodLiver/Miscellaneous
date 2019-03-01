@@ -13,3 +13,9 @@ For coursework: The aim is to write a patient information processing program. Ad
 3. Computing Methodologies 3, Optimizations
 
 For coursework: The aim is to devise an algorithm to solve Shannon Entropy, Fractional Clique Cover number problem f undirected graphs using LP solvers. The information to solve was taken from "Maximilien Gadouleau. On the possible values of the entropy of undirected graphs. Journal of Graph Theory, 82:302–311, 2018."
+
+4. Contemporary Computer Science III (double), Virtual Reality
+
+For coursework: The aim is to develop a headset tilt & yaw correction, quaternion multiplication, by using gyroscope,accelerometer and magnetometer (IMU) data. Used/referenced paper:
+
+LAVALLE, S. M., YERSHOVA, A., KATSEV, M., AND ANTONOV, M. Head tracking for the oculus rift. In *Robotics and Automation (ICRA), 2014 IEEE International Conference on* (2014), IEEE, pp. 187–194.
