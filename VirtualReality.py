@@ -1,9 +1,7 @@
 import pandas as pd,numpy as np,matplotlib.pyplot as plt,math as m
 
 """
-
     Question1
-
 """
 
 "Read/import"
@@ -114,9 +112,7 @@ def qProd(q,r):#change?
     return [t0,t1,t2,t3]
 
 """
-
     Question2
-
 """
 gyroM=magnitudeFinder(gyroX,gyroY,gyroZ)
 
@@ -160,19 +156,16 @@ for each in estimate:
     resyx.append(-toEuler(each)[1])#- is important
     reszx.append(toEuler(each)[0])#
 
-plt.plot(time,np.rad2deg(resxx),label="phiq2",color="red")#color="black")#wrong spikes
+plt.plot(time,np.rad2deg(resxx),label="phiq2",color="black")#color="black")#wrong spikes
 # print(np.rad2deg(resxx))
-plt.plot(time,np.rad2deg(resyx),label="thetaq2",color="green")#color="blue")#semi
-plt.plot(time,np.rad2deg(reszx),label="psiq2",color="purple")#color="yellow")#correct
+plt.plot(time,np.rad2deg(resyx),label="thetaq2",color="blue")#color="blue")#semi
+plt.plot(time,np.rad2deg(reszx),label="psiq2",color="yellow")#color="yellow")#correct
 plt.legend()
 # plt.show()
 
 """
-
     Question3
-
     general remarks: is it normal to be very similar?
-
 """
 
 "to global"
@@ -241,19 +234,16 @@ for each in goodestimate:
     resy.append(-toEuler(each)[1])#- is important
     resz.append(toEuler(each)[0])#
 
-plt.plot(time[1:],np.rad2deg(resx),label="phiq3",color="red")#color="cyan")#wrong spikes
+plt.plot(time[1:],np.rad2deg(resx),label="phiq3",color="cyan")#color="cyan")#wrong spikes
 # print(np.rad2deg(resx))
-plt.plot(time[1:],np.rad2deg(resy),label="thetaq3",color="green")#color="orange")#semi
-plt.plot(time[1:],np.rad2deg(resz),label="psiq3",color="purple")#color="magenta")#correct
+plt.plot(time[1:],np.rad2deg(resy),label="thetaq3",color="orange")#color="orange")#semi
+plt.plot(time[1:],np.rad2deg(resz),label="psiq3",color="magenta")#color="magenta")#correct
 plt.legend()
 # plt.show()
 
 """
-
     Question4
-
     general remarks: is it normal to be very similar?
-
 """
 
 # mref=np.float64(conjQ[0])*magnM[0]*np.float64(quaternions[0])
