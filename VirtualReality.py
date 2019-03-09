@@ -7,7 +7,10 @@ import pandas as pd,numpy as np,matplotlib.pyplot as plt,math as m
 """
 
 "Read/import"
-
+# inp=input("please enter csv file name wo extension: ")
+# if inp!="":
+#     data=pd.read_csv(inp+".csv", delimiter=',')
+# else:
 data=pd.read_csv("IMUData.csv", delimiter=',')
 
 time=data["time"].values
@@ -68,15 +71,17 @@ for each in eulerAngs:
 "back to Euler"
 def toEuler(each):
     poles=each[1]*each[2] + each[3]*each[0]
-    if poles != 0.5 and poles != -0.5:
+    if poles <= 0.5 and poles >= -0.5:
         heading= m.atan2(2*each[2]*each[0]-2*each[1]*each[3] , 1 - 2*each[2]*each[2] - 2*each[3]*each[3])
         attitude = m.asin(2*poles)
         bank = m.atan2(2*each[1]*each[0]-2*each[2]*each[3] , 1 - 2*each[1]*each[1] - 2*each[3]*each[3])
-    elif poles == 0.5:
+    elif poles > 0.5:
         heading = 2*m.atan2(each[1],each[0])
+        attitude = m.asin(poles)#ereasable
         bank = 0
-    elif poles == -0.5:
+    elif poles < -0.5:
         heading = -2*m.atan2(each[1],each[0])
+        attitude = m.asin(poles)#ereasable
         bank = 0
 
     return [heading,attitude,bank]
@@ -135,7 +140,7 @@ for each in range(len(time)-1):#0
     qvt=toQuaternions(gyroNX[each],gyroNZ[each],-gyroNY[each],theta[each])#x,z,y
     estimate.append(qProd(estimate[each],qvt))
 
-
+#orthognal
 #xyz
 #xzy---
 #yzx
@@ -155,9 +160,10 @@ for each in estimate:
     resyx.append(-toEuler(each)[1])#- is important
     reszx.append(toEuler(each)[0])#
 
-plt.plot(time,np.rad2deg(resxx),label="phiq2",color="black")#wrong spikes
-plt.plot(time,np.rad2deg(resyx),label="thetaq2",color="blue")#semi
-plt.plot(time,np.rad2deg(reszx),label="psiq2",color="yellow")#correct
+plt.plot(time,np.rad2deg(resxx),label="phiq2",color="red")#color="black")#wrong spikes
+# print(np.rad2deg(resxx))
+plt.plot(time,np.rad2deg(resyx),label="thetaq2",color="green")#color="blue")#semi
+plt.plot(time,np.rad2deg(reszx),label="psiq2",color="purple")#color="yellow")#correct
 plt.legend()
 # plt.show()
 
@@ -165,7 +171,7 @@ plt.legend()
 
     Question3
 
-    general remarks: recheck after all axis of gyro is correct
+    general remarks: is it normal to be very similar?
 
 """
 
@@ -186,10 +192,10 @@ for each in range(len(acceM)):
     avt=toQuaternions(acceX[each+1],acceY[each+1],acceZ[each+1],calc)#theta[each]
     # globalA.append(conjVquat(conjQ[each],acceM[each],quaternions[each]))#
     # last-globalA.append(qProd(qProd(conjQ[each],avt),quaternions[each]))#conjVquat(conjQ[each],acceM[each],quaternions[each]))#
-    globalA.append(qProd(qProd(newconjQ[each],avt),estimate[each]))
-"new theta? new phi,thet,psi check all again"
-"check acceM shuld be q?"
-"clarification needed to continue"
+    globalA.append(qProd(qProd(newconjQ[each],avt),estimate[each]))#conj,quater[]
+    "new theta? new phi,thet,psi check all again"
+    "check acceM shuld be q?"
+    "clarification needed to continue"
 
 toEuAcce=[]
 for each in globalA:
@@ -197,10 +203,10 @@ for each in globalA:
 
 "calc tilt axis"
 project=[]
-# for each in globalA:
-#     project.append(np.asarray([each[1],0,each[3]]))
 for each in toEuAcce:
     project.append(np.asarray([each[0],0,each[2]]))
+# for each in globalA:
+#     project.append(np.asarray([each[1],0,each[3]]))
     "currently x,0,z  old: t=each[3],0,-each[1]  z,0,-x"
     "X,Z,-Y to Y,-Z,X"
     "hence might be 3,0,1?"
@@ -235,8 +241,82 @@ for each in goodestimate:
     resy.append(-toEuler(each)[1])#- is important
     resz.append(toEuler(each)[0])#
 
-plt.plot(time[1:],np.rad2deg(resx),label="phiq3",color="red")#wrong spikes
-plt.plot(time[1:],np.rad2deg(resy),label="thetaq3",color="green")#semi
-plt.plot(time[1:],np.rad2deg(resz),label="psiq3",color="purple")#correct
+plt.plot(time[1:],np.rad2deg(resx),label="phiq3",color="red")#color="cyan")#wrong spikes
+# print(np.rad2deg(resx))
+plt.plot(time[1:],np.rad2deg(resy),label="thetaq3",color="green")#color="orange")#semi
+plt.plot(time[1:],np.rad2deg(resz),label="psiq3",color="purple")#color="magenta")#correct
+plt.legend()
+# plt.show()
+
+"""
+
+    Question4
+
+    general remarks: is it normal to be very similar?
+
+"""
+
+# mref=np.float64(conjQ[0])*magnM[0]*np.float64(quaternions[0])
+newMconjQ=[]
+for each in goodestimate:
+    newMconjQ.append(conjQuot(each))
+
+mref=qProd(qProd(newMconjQ[0],toQuaternions(magnX[0],magnY[0],magnZ[0],time[1]*gyroM[0])),goodestimate[0])#np.float64(conjQ[0])*magnM[0]*np.float64(quaternions[0])
+# print(mref)
+mest=[]
+mdist=[]
+
+magnM=magnM[1:]
+
+# def subFiltCalc(a,b,c):
+#     np.float64(conjQ[each])*magnM[each]*np.float64(quaternions[each])
+
+"calc yaw drift"
+for each in range(len(magnM)):
+    # mest.append(subFiltCalc(np.float64(conjQ[each]),magnM[each],quaternions[each]))###???????????????
+    # mest.append(qProd(qProd(conjQ[each],magnM[each]),quaternions[each]))###???????????????
+    # mest.append(np.float64(conjQ[each])*magnM[each]*np.float64(quaternions[each]))#!!! old canonical
+
+    mest.append(qProd(qProd(newMconjQ[each],toQuaternions(magnX[each],magnY[each],magnZ[each],([each+1]-time[each])*gyroM[each])),goodestimate[each]))
+    # mdist.append(magnM[each]-magnM[0])#check if correct
+    mEuRef=toEuler(mref)
+    mEuEst=toEuler(mest[each])
+    # mdist.append(magnM[0]-magnitudeFinder(mEuRef[0],mEuRef[1],mEuRef[2]))
+    mdist.append(magnitudeFinder(mEuRef[0],mEuRef[1],mEuRef[2])-magnitudeFinder(mEuEst[0],mEuEst[1],mEuEst[2]))
+# print(mdist)
+"check for better"
+yawCfilt=[]
+thr=m.atan2(mref[1],mref[3])
+# thr=m.atan2(mref[1],-mref[2])
+# yawCfilt =[[1,1,1,1]]#maybe removed
+for each in range(len(time)-1):#0
+    th=m.atan2(mest[each][1],mest[each][3])#x,z
+    # th=m.atan2(mest[each][1],-mest[each][2])#x,-y
+
+    # q((0, 1, 0), −α2(θ − θr)) for xyz
+    qvt=toQuaternions(0,1,0,-alpha*(th-thr))#np.array([m.cos(-alpha*(th-thr)/2), 0,m.sin((th-thr)/2),0])
+    # estimate.append(qProd(estimate[each],qvt))
+    yawCfilt.append(qProd(qvt,goodestimate[each]))#which estimate are we talking about
+
+ressx=[]
+ressy=[]
+ressz=[]
+# for each in estimate:
+#     ress.append(toEuler(each))
+
+"acce res"
+for each in yawCfilt:
+    ressx.append(toEuler(each)[2])#
+    ressy.append(-toEuler(each)[1])#- is important
+    ressz.append(toEuler(each)[0])#
+
+
+plt.plot(time[1:],np.rad2deg(ressx),label="phiq4",color="red")#wrong spikes
+# print(np.rad2deg(ressx))
+plt.plot(time[1:],np.rad2deg(ressy),label="thetaq4",color="green")#semi
+plt.plot(time[1:],np.rad2deg(ressz),label="psiq4",color="purple")#correct
 plt.legend()
 plt.show()
+
+# plt.plot(time[1:],mdist,'bo')#linestyle=":")
+# plt.show()
