@@ -1,4 +1,7 @@
-import pandas as pd,numpy as np,matplotlib.pyplot as plt,math as m
+import pandas as pd,numpy as np,matplotlib.pyplot as plt,math as m,time as tt
+import mpl_toolkits.mplot3d.axes3d as p3
+import matplotlib.animation as animation
+
 
 """
     Question1
@@ -125,21 +128,21 @@ def deadReckoningFilter():
         qvt=toQuaternions(gyroNX[each],gyroNZ[each],-gyroNY[each],theta[each])#x,z,y
         estimate.append(qProd(estimate[each],qvt))
 
-    "drawing dead reckoning filter results"
-    resxx=[]
-    resyx=[]
-    reszx=[]
+    # "drawing dead reckoning filter results"
+    # resxx=[]
+    # resyx=[]
+    # reszx=[]
+    #
+    # for each in estimate:
+    #     resxx.append(toEuler(each)[2])
+    #     resyx.append(-toEuler(each)[1])
+    #     reszx.append(toEuler(each)[0])
 
-    for each in estimate:
-        resxx.append(toEuler(each)[2])
-        resyx.append(-toEuler(each)[1])
-        reszx.append(toEuler(each)[0])
-
-    plt.plot(time,np.rad2deg(resxx),label="phiq2",color="black")
-    plt.plot(time,np.rad2deg(resyx),label="thetaq2",color="blue")
-    plt.plot(time,np.rad2deg(reszx),label="psiq2",color="gray")
-    plt.legend()
-    plt.show()
+    # plt.plot(time,np.rad2deg(resxx),label="phiq2",color="black")
+    # plt.plot(time,np.rad2deg(resyx),label="thetaq2",color="blue")
+    # plt.plot(time,np.rad2deg(reszx),label="psiq2",color="gray")
+    # plt.legend()
+    # plt.show()
 
     "returns drf estimate result"
     return estimate,gyroM
@@ -194,22 +197,22 @@ def tiltCorrection(estimate,alpha,acceM,gyroM):
         goodestimate.append(qProd(qvt,estimate[each]))
 
 
-    "draw the tilt correction plot"
-    resx=[]
-    resy=[]
-    resz=[]
-
-    "acce res"
-    for each in goodestimate:
-        resx.append(toEuler(each)[2])#
-        resy.append(-toEuler(each)[1])#- is important
-        resz.append(toEuler(each)[0])#
-
-    plt.plot(time[1:],np.rad2deg(resx),label="phiq3",color="cyan")
-    plt.plot(time[1:],np.rad2deg(resy),label="thetaq3",color="orange")
-    plt.plot(time[1:],np.rad2deg(resz),label="psiq3",color="magenta")
-    plt.legend()
-    plt.show()
+    # "draw the tilt correction plot"
+    # resx=[]
+    # resy=[]
+    # resz=[]
+    #
+    # "acce res"
+    # for each in goodestimate:
+    #     resx.append(toEuler(each)[2])#
+    #     resy.append(-toEuler(each)[1])#- is important
+    #     resz.append(toEuler(each)[0])#
+    #
+    # plt.plot(time[1:],np.rad2deg(resx),label="phiq3",color="cyan")
+    # plt.plot(time[1:],np.rad2deg(resy),label="thetaq3",color="orange")
+    # plt.plot(time[1:],np.rad2deg(resz),label="psiq3",color="magenta")
+    # plt.legend()
+    # plt.show()
 
     return goodestimate
 
@@ -242,27 +245,105 @@ def yawCorrection(goodestimate,alpha,magnM):
         qvt=toQuaternions(0,1,0,-alpha*(th-thr))
         yawCfilt.append(qProd(qvt,goodestimate[each]))
 
-    "yaw corrected result plotting"
-    ressx=[]
-    ressy=[]
-    ressz=[]
-
-    for each in yawCfilt:
-        ressx.append(toEuler(each)[2])
-        ressy.append(-toEuler(each)[1])
-        ressz.append(toEuler(each)[0])
-
-
-    plt.plot(time[1:],np.rad2deg(ressx),label="phiq4",color="red")
-    plt.plot(time[1:],np.rad2deg(ressy),label="thetaq4",color="green")
-    plt.plot(time[1:],np.rad2deg(ressz),label="psiq4",color="purple")
-    plt.legend()
-    plt.show()
+    # "yaw corrected result plotting"
+    # ressx=[]
+    # ressy=[]
+    # ressz=[]
+    #
+    # for each in yawCfilt:
+    #     ressx.append(toEuler(each)[2])
+    #     ressy.append(-toEuler(each)[1])
+    #     ressz.append(toEuler(each)[0])
+    #
+    #
+    # plt.plot(time[1:],np.rad2deg(ressx),label="phiq4",color="red")
+    # plt.plot(time[1:],np.rad2deg(ressy),label="thetaq4",color="green")
+    # plt.plot(time[1:],np.rad2deg(ressz),label="psiq4",color="purple")
+    # plt.legend()
+    # plt.show()
 
     return yawCfilt
 
+
+"""
+    Question5
+"""
+
+def plotter(in1,in2,in3,divisor):
+    "plots the axis in real time"
+    ends=len(in1)
+    fig = plt.figure()
+    ax1 = fig.add_subplot(1, 3, 1, projection='3d')
+    ax2 = fig.add_subplot(1, 3, 2, projection='3d')
+    ax3 = fig.add_subplot(1, 3, 3, projection='3d')
+
+    x1=[0,0,0,1,0,0]
+    y1=[0,0,0,0,1,0]
+    z1=[0,0,0,0,0,1]
+    x2=[0,0,0,1,0,0]
+    y2=[0,0,0,0,1,0]
+    z2=[0,0,0,0,0,1]
+    x3=[0,0,0,1,0,0]
+    y3=[0,0,0,0,1,0]
+    z3=[0,0,0,0,0,1]
+
+    ins=[in1,in2,in3]
+    xs=[x1,x2,x3]
+    ys=[y1,y2,y3]
+    zs=[z1,z2,z3]
+    axs=[ax1,ax2,ax3]
+
+    def animate(i,ax,x,y,z):
+        i=round(6959*((tt.time()-startingTime)/27.18)/divisor)
+        if i<6959:
+            for eachInd in range(3):
+                wData=ins[eachInd][i][0]
+                xData=ins[eachInd][i][1]
+                yData=ins[eachInd][i][2]
+                zData=ins[eachInd][i][3]
+
+                x[eachInd][3]=1-2*yData*yData-2*zData*zData
+                x[eachInd][4]=2*xData*yData+2*wData*zData
+                x[eachInd][5]=2*xData*zData-2*wData*yData
+
+                y[eachInd][3]=2*xData*yData-2*wData*zData
+                y[eachInd][4]=1-2*xData*xData-2*zData*zData
+                y[eachInd][5]=2*yData*zData+2*wData*xData
+
+                z[eachInd][3]=2*xData*zData+2*wData*yData
+                z[eachInd][4]=2*yData*zData-2*wData*xData
+                z[eachInd][5]=1-2*xData*xData-2*yData*yData
+
+                ax[eachInd].cla()
+                ax[eachInd].quiver(x[eachInd][0],x[eachInd][1],x[eachInd][2],x[eachInd][3],x[eachInd][4],x[eachInd][5],color="red")
+                ax[eachInd].quiver(y[eachInd][0],y[eachInd][1],y[eachInd][2],y[eachInd][3],y[eachInd][4],y[eachInd][5],color="blue")
+                ax[eachInd].quiver(z[eachInd][0],z[eachInd][1],z[eachInd][2],z[eachInd][3],z[eachInd][4],z[eachInd][5],color="green")
+
+                ax[eachInd].set_xlim3d([-1.0, 1.0])
+                ax[eachInd].set_xlabel('X')
+                ax[eachInd].set_ylim3d([-1.0, 1.0])
+                ax[eachInd].set_ylabel('Y')
+                ax[eachInd].set_zlim3d([-1.0, 1.0])
+                ax[eachInd].set_zlabel('Z')
+
+                if eachInd==0:
+                    ax[eachInd].set_title('gyro')
+                elif eachInd==1:
+                    ax[eachInd].set_title('gyro+acce')
+                else:
+                    ax[eachInd].set_title('gyro+acce+magn')
+
+            return x,y,z
+        else:
+            plt.close()
+
+    startingTime=tt.time()
+    line_ani = animation.FuncAnimation(fig,animate,fargs=(axs,xs,ys,zs), interval=0, blit=False, repeat = False)
+    plt.show()
+
 if __name__ == "__main__":
 
+    print("pre-processing..")
     "stores the IMUdata to a variable."
     data=readData("IMUData.csv")
 
@@ -295,8 +376,20 @@ if __name__ == "__main__":
     magnNY=normalizer(magnY,magnM)
     magnNZ=normalizer(magnZ,magnM)
 
+    print("Question 1..")
     question1()
 
+    print("Question 2-Dead Reckoning Filter..")
     estimate,gyroM=deadReckoningFilter()
+    print("Question 3-Tilt Correction..")
     goodestimate=tiltCorrection(estimate,0.01,acceM,gyroM)
+    print("Question 4-Yaw Correction..")
     yawCfilt=yawCorrection(goodestimate,0.01,magnM)
+
+    print("Question 5:")
+    print("Creating 3D visualizer in normal speed..")
+    plotter(estimate,goodestimate,yawCfilt,1)
+    print("Creating 3D visualizer in 2x slower speed..")
+    plotter(estimate,goodestimate,yawCfilt,2)
+
+    print("Done!")
