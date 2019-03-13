@@ -128,15 +128,17 @@ def deadReckoningFilter():
         qvt=toQuaternions(gyroNX[each],gyroNZ[each],-gyroNY[each],theta[each])#x,z,y
         estimate.append(qProd(estimate[each],qvt))
 
-    # "drawing dead reckoning filter results"
-    # resxx=[]
-    # resyx=[]
-    # reszx=[]
-    #
-    # for each in estimate:
-    #     resxx.append(toEuler(each)[2])
-    #     resyx.append(-toEuler(each)[1])
-    #     reszx.append(toEuler(each)[0])
+    "drawing dead reckoning filter results"
+    resxx=[]
+    resyx=[]
+    reszx=[]
+
+    for each in estimate:
+        resxx.append(toEuler(each)[2])
+        resyx.append(-toEuler(each)[1])
+        reszx.append(toEuler(each)[0])
+
+    resDRF=[resxx,resyx,reszx]
 
     # plt.plot(time,np.rad2deg(resxx),label="phiq2",color="black")
     # plt.plot(time,np.rad2deg(resyx),label="thetaq2",color="blue")
@@ -145,7 +147,7 @@ def deadReckoningFilter():
     # plt.show()
 
     "returns drf estimate result"
-    return estimate,gyroM
+    return estimate,gyroM,resDRF
 
 """
     Question3
@@ -187,7 +189,6 @@ def tiltCorrection(estimate,alpha,acceM,gyroM):
     for each in toEuAcce:
         normEach=magnitudeFinder(each[0],each[1],each[2])
         phi.append(m.acos(np.dot(each,phivec) / normEach))
-    "dont forget the axis conversion again"
 
     "complimentary filter for accelerometer correction"
     alpha=0.001
@@ -197,16 +198,16 @@ def tiltCorrection(estimate,alpha,acceM,gyroM):
         goodestimate.append(qProd(qvt,estimate[each]))
 
 
-    # "draw the tilt correction plot"
-    # resx=[]
-    # resy=[]
-    # resz=[]
-    #
-    # "acce res"
-    # for each in goodestimate:
-    #     resx.append(toEuler(each)[2])#
-    #     resy.append(-toEuler(each)[1])#- is important
-    #     resz.append(toEuler(each)[0])#
+    "draw the tilt correction plot"
+    resx=[]
+    resy=[]
+    resz=[]
+
+    "acce res"
+    for each in goodestimate:
+        resx.append(toEuler(each)[2])
+        resy.append(-toEuler(each)[1])
+        resz.append(toEuler(each)[0])
     #
     # plt.plot(time[1:],np.rad2deg(resx),label="phiq3",color="cyan")
     # plt.plot(time[1:],np.rad2deg(resy),label="thetaq3",color="orange")
@@ -214,7 +215,8 @@ def tiltCorrection(estimate,alpha,acceM,gyroM):
     # plt.legend()
     # plt.show()
 
-    return goodestimate
+    resTilt=[resx,resy,resz]
+    return goodestimate,resTilt
 
 
 """
@@ -245,37 +247,78 @@ def yawCorrection(goodestimate,alpha,magnM):
         qvt=toQuaternions(0,1,0,-alpha*(th-thr))
         yawCfilt.append(qProd(qvt,goodestimate[each]))
 
-    # "yaw corrected result plotting"
-    # ressx=[]
-    # ressy=[]
-    # ressz=[]
-    #
-    # for each in yawCfilt:
-    #     ressx.append(toEuler(each)[2])
-    #     ressy.append(-toEuler(each)[1])
-    #     ressz.append(toEuler(each)[0])
-    #
-    #
+    "yaw corrected result plotting"
+    ressx=[]
+    ressy=[]
+    ressz=[]
+
+    for each in yawCfilt:
+        ressx.append(toEuler(each)[2])
+        ressy.append(-toEuler(each)[1])
+        ressz.append(toEuler(each)[0])
+
     # plt.plot(time[1:],np.rad2deg(ressx),label="phiq4",color="red")
     # plt.plot(time[1:],np.rad2deg(ressy),label="thetaq4",color="green")
     # plt.plot(time[1:],np.rad2deg(ressz),label="psiq4",color="purple")
     # plt.legend()
     # plt.show()
 
-    return yawCfilt
+    resYaw=[ressx,ressy,ressz]
+
+    return yawCfilt,resYaw
 
 
 """
     Question5
 """
 
-def plotter(in1,in2,in3,divisor):
+def plotter(in1,in2,in3,divisor,alls):
     "plots the axis in real time"
     ends=len(in1)
     fig = plt.figure()
-    ax1 = fig.add_subplot(1, 3, 1, projection='3d')
-    ax2 = fig.add_subplot(1, 3, 2, projection='3d')
-    ax3 = fig.add_subplot(1, 3, 3, projection='3d')
+
+    ax11 = fig.add_subplot(3, 3, 1)
+    ax11.plot(alls[0],np.rad2deg(alls[4][0]),label="gyroX",color="red")
+    ax11.plot(alls[0],np.rad2deg(alls[4][1]),label="gyroY",color="green")
+    ax11.plot(alls[0],np.rad2deg(alls[4][2]),label="gyroZ",color="purple")
+    ax11.set_title('Gyroscope')
+    plt.legend()
+    ax12 = fig.add_subplot(3, 3, 2)
+    ax12.plot(alls[0],alls[5][0],label="acceX",color="red")
+    ax12.plot(alls[0],alls[5][1],label="acceY",color="green")
+    ax12.plot(alls[0],alls[5][2],label="acceZ",color="purple")
+    ax12.set_title('Accelerometer')
+    plt.legend()
+    ax13 = fig.add_subplot(3, 3, 3)
+    ax13.plot(alls[0],alls[6][0],label="magnX",color="red")
+    ax13.plot(alls[0],alls[6][1],label="magnY",color="green")
+    ax13.plot(alls[0],alls[6][2],label="magnZ",color="purple")
+    ax13.set_title('Magnetometer')
+    plt.legend()
+    ax11 = fig.add_subplot(3, 3, 4)
+    ax11.plot(alls[0],np.rad2deg(alls[1][0]),label="phiQ2",color="red")
+    ax11.plot(alls[0],np.rad2deg(alls[1][1]),label="thetaQ2",color="green")
+    ax11.plot(alls[0],np.rad2deg(alls[1][2]),label="psiQ2",color="purple")
+    ax11.set_title('Dead Reckoning Filter')
+    plt.legend()
+    ax12 = fig.add_subplot(3, 3, 5)
+    ax12.plot(alls[0][1:],np.rad2deg(alls[2][0]),label="phiQ3",color="red")
+    ax12.plot(alls[0][1:],np.rad2deg(alls[2][1]),label="thetaQ3",color="green")
+    ax12.plot(alls[0][1:],np.rad2deg(alls[2][2]),label="psiQ3",color="purple")
+    ax12.set_title('Tilt Correction')
+    plt.legend()
+    ax13 = fig.add_subplot(3, 3, 6)
+    ax13.plot(alls[0][1:],np.rad2deg(alls[3][0]),label="phiQ4",color="red")
+    ax13.plot(alls[0][1:],np.rad2deg(alls[3][1]),label="thetaQ4",color="green")
+    ax13.plot(alls[0][1:],np.rad2deg(alls[3][2]),label="psiQ4",color="purple")
+    ax13.set_title('Yaw Correction')
+    plt.legend()
+
+    ax1 = fig.add_subplot(3, 3, 7, projection='3d')
+    ax2 = fig.add_subplot(3, 3, 8, projection='3d')
+    ax3 = fig.add_subplot(3, 3, 9, projection='3d')
+
+    finalT=int(alls[0][-1])
 
     x1=[0,0,0,1,0,0]
     y1=[0,0,0,0,1,0]
@@ -294,7 +337,7 @@ def plotter(in1,in2,in3,divisor):
     axs=[ax1,ax2,ax3]
 
     def animate(i,ax,x,y,z):
-        i=round(6959*((tt.time()-startingTime)/27.18)/divisor)
+        i=round(6959*((tt.time()-startingTime)/finalT)/divisor)
         if i<6959:
             for eachInd in range(3):
                 wData=ins[eachInd][i][0]
@@ -315,9 +358,9 @@ def plotter(in1,in2,in3,divisor):
                 z[eachInd][5]=1-2*xData*xData-2*yData*yData
 
                 ax[eachInd].cla()
-                ax[eachInd].quiver(x[eachInd][0],x[eachInd][1],x[eachInd][2],x[eachInd][3],x[eachInd][4],x[eachInd][5],color="red")
-                ax[eachInd].quiver(y[eachInd][0],y[eachInd][1],y[eachInd][2],y[eachInd][3],y[eachInd][4],y[eachInd][5],color="blue")
-                ax[eachInd].quiver(z[eachInd][0],z[eachInd][1],z[eachInd][2],z[eachInd][3],z[eachInd][4],z[eachInd][5],color="green")
+                ax[eachInd].quiver(0,0,0,x[eachInd][3],x[eachInd][4],x[eachInd][5],color="green")
+                ax[eachInd].quiver(0,0,0,y[eachInd][3],y[eachInd][4],y[eachInd][5],color="red")
+                ax[eachInd].quiver(0,0,0,z[eachInd][3],z[eachInd][4],z[eachInd][5],color="purple")
 
                 ax[eachInd].set_xlim3d([-1.0, 1.0])
                 ax[eachInd].set_xlabel('X')
@@ -339,6 +382,8 @@ def plotter(in1,in2,in3,divisor):
 
     startingTime=tt.time()
     line_ani = animation.FuncAnimation(fig,animate,fargs=(axs,xs,ys,zs), interval=0, blit=False, repeat = False)
+    manager = plt.get_current_fig_manager()
+    manager.window.showMaximized()
     plt.show()
 
 if __name__ == "__main__":
@@ -380,16 +425,18 @@ if __name__ == "__main__":
     question1()
 
     print("Question 2-Dead Reckoning Filter..")
-    estimate,gyroM=deadReckoningFilter()
+    estimate,gyroM,resDRF=deadReckoningFilter()
     print("Question 3-Tilt Correction..")
-    goodestimate=tiltCorrection(estimate,0.01,acceM,gyroM)
+    goodestimate,resTilt=tiltCorrection(estimate,0.01,acceM,gyroM)
     print("Question 4-Yaw Correction..")
-    yawCfilt=yawCorrection(goodestimate,0.01,magnM)
+    yawCfilt,resYaw=yawCorrection(goodestimate,0.01,magnM)
 
     print("Question 5:")
+    "to plot figures for Question 5"
+    alls=[time,resDRF,resTilt,resYaw,[gyroX,gyroY,gyroZ],[acceX,acceY,acceZ],[magnX,magnY,magnZ]]
     print("Creating 3D visualizer in normal speed..")
-    plotter(estimate,goodestimate,yawCfilt,1)
+    plotter(estimate,goodestimate,yawCfilt,1,alls)
     print("Creating 3D visualizer in 2x slower speed..")
-    plotter(estimate,goodestimate,yawCfilt,2)
+    plotter(estimate,goodestimate,yawCfilt,2,alls)
 
     print("Done!")
