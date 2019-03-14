@@ -169,7 +169,7 @@ def tiltCorrection(estimate,alpha,acceM,gyroM):
         t=time[each+1]-time[each]
         calc=t*gyroM[each]#may change?
         avt=toQuaternions(acceX[each+1],acceY[each+1],acceZ[each+1],calc)
-        globalA.append(qProd(qProd(newconjQ[each],avt),estimate[each]))
+        globalA.append(qProd(qProd(estimate[each],avt),newconjQ[each]))
 
     "convert global data to euler forma again"
     toEuAcce=[]
@@ -423,9 +423,9 @@ if __name__ == "__main__":
     print("Question 2-Dead Reckoning Filter..")
     estimate,gyroM,resDRF=deadReckoningFilter()
     print("Question 3-Tilt Correction..")
-    goodestimate,resTilt=tiltCorrection(estimate,0.01,acceM,gyroM)
+    goodestimate,resTilt=tiltCorrection(estimate,0.05,acceM,gyroM)
     print("Question 4-Yaw Correction..")
-    yawCfilt,resYaw=yawCorrection(goodestimate,0.01,magnM)
+    yawCfilt,resYaw=yawCorrection(goodestimate,0.05,magnM)
 
     print("Question 5:")
     "to plot figures for Question 5"
