@@ -319,48 +319,45 @@ def plotter(in1,in2,in3,divisor,alls):
     ax3 = fig.add_subplot(3, 3, 9, projection='3d')
 
     finalT=int(alls[0][-1])
+    finalFr=len(in1)
 
-    x1=[0,0,0,1,0,0]
-    y1=[0,0,0,0,1,0]
-    z1=[0,0,0,0,0,1]
-    x2=[0,0,0,1,0,0]
-    y2=[0,0,0,0,1,0]
-    z2=[0,0,0,0,0,1]
-    x3=[0,0,0,1,0,0]
-    y3=[0,0,0,0,1,0]
-    z3=[0,0,0,0,0,1]
+    xM=[1,0,0]
+    yM=[0,1,0]
+    zM=[0,0,1]
 
     ins=[in1,in2,in3]
-    xs=[x1,x2,x3]
-    ys=[y1,y2,y3]
-    zs=[z1,z2,z3]
+
+    " [gyro, gyro+acce, gyro+acce+magn] quaternion data"
+    xs=[xM,xM,xM]
+    ys=[yM,yM,yM]
+    zs=[zM,zM,zM]
     axs=[ax1,ax2,ax3]
 
     def animate(i,ax,x,y,z):
-        i=round(6959*((tt.time()-startingTime)/finalT)/divisor)
-        if i<6959:
+        i=round(finalFr*((tt.time()-startingTime)/finalT)/divisor)
+        if i<finalFr:
             for eachInd in range(3):
                 wData=ins[eachInd][i][0]
                 xData=ins[eachInd][i][1]
                 yData=ins[eachInd][i][2]
                 zData=ins[eachInd][i][3]
 
-                x[eachInd][3]=1-2*yData*yData-2*zData*zData
-                x[eachInd][4]=2*xData*yData+2*wData*zData
-                x[eachInd][5]=2*xData*zData-2*wData*yData
+                x[eachInd][0]=1-2*yData*yData-2*zData*zData
+                x[eachInd][1]=2*xData*yData+2*wData*zData
+                x[eachInd][2]=2*xData*zData-2*wData*yData
 
-                y[eachInd][3]=2*xData*yData-2*wData*zData
-                y[eachInd][4]=1-2*xData*xData-2*zData*zData
-                y[eachInd][5]=2*yData*zData+2*wData*xData
+                y[eachInd][0]=2*xData*yData-2*wData*zData
+                y[eachInd][1]=1-2*xData*xData-2*zData*zData
+                y[eachInd][2]=2*yData*zData+2*wData*xData
 
-                z[eachInd][3]=2*xData*zData+2*wData*yData
-                z[eachInd][4]=2*yData*zData-2*wData*xData
-                z[eachInd][5]=1-2*xData*xData-2*yData*yData
+                z[eachInd][0]=2*xData*zData+2*wData*yData
+                z[eachInd][1]=2*yData*zData-2*wData*xData
+                z[eachInd][2]=1-2*xData*xData-2*yData*yData
 
                 ax[eachInd].cla()
-                ax[eachInd].quiver(0,0,0,x[eachInd][3],x[eachInd][4],x[eachInd][5],color="green")
-                ax[eachInd].quiver(0,0,0,y[eachInd][3],y[eachInd][4],y[eachInd][5],color="red")
-                ax[eachInd].quiver(0,0,0,z[eachInd][3],z[eachInd][4],z[eachInd][5],color="purple")
+                ax[eachInd].quiver(0,0,0,x[eachInd][0],x[eachInd][1],x[eachInd][2],color="green")
+                ax[eachInd].quiver(0,0,0,y[eachInd][0],y[eachInd][1],y[eachInd][2],color="red")
+                ax[eachInd].quiver(0,0,0,z[eachInd][0],z[eachInd][1],z[eachInd][2],color="purple")
 
                 ax[eachInd].set_xlim3d([-1.0, 1.0])
                 ax[eachInd].set_xlabel('X')
