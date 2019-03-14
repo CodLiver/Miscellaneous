@@ -191,7 +191,6 @@ def tiltCorrection(estimate,alpha,acceM,gyroM):
         phi.append(m.acos(np.dot(each,phivec) / normEach))
 
     "complimentary filter for accelerometer correction"
-    alpha=0.001
     goodestimate=[]
     for each in range(len(time)-1):
         qvt=toQuaternions(tiltax[each][0],0,tiltax[each][2],-alpha*phi[each])#x
@@ -281,37 +280,37 @@ def plotter(in1,in2,in3,divisor,alls):
     ax11.plot(alls[0],np.rad2deg(alls[4][0]),label="gyroX",color="red")
     ax11.plot(alls[0],np.rad2deg(alls[4][1]),label="gyroY",color="green")
     ax11.plot(alls[0],np.rad2deg(alls[4][2]),label="gyroZ",color="purple")
-    ax11.set_title('Gyroscope')
+    ax11.set_title('Fig1 Gyroscope (in deg/s)')
     plt.legend()
     ax12 = fig.add_subplot(3, 3, 2)
     ax12.plot(alls[0],alls[5][0],label="acceX",color="red")
     ax12.plot(alls[0],alls[5][1],label="acceY",color="green")
     ax12.plot(alls[0],alls[5][2],label="acceZ",color="purple")
-    ax12.set_title('Accelerometer')
+    ax12.set_title('Fig2 Accelerometer g (in m/s^2)')
     plt.legend()
     ax13 = fig.add_subplot(3, 3, 3)
     ax13.plot(alls[0],alls[6][0],label="magnX",color="red")
     ax13.plot(alls[0],alls[6][1],label="magnY",color="green")
     ax13.plot(alls[0],alls[6][2],label="magnZ",color="purple")
-    ax13.set_title('Magnetometer')
+    ax13.set_title('Fig3 Magnetometer in Gauss')
     plt.legend()
     ax11 = fig.add_subplot(3, 3, 4)
     ax11.plot(alls[0],np.rad2deg(alls[1][0]),label="phiQ2",color="red")
     ax11.plot(alls[0],np.rad2deg(alls[1][1]),label="thetaQ2",color="green")
     ax11.plot(alls[0],np.rad2deg(alls[1][2]),label="psiQ2",color="purple")
-    ax11.set_title('Dead Reckoning Filter')
+    ax11.set_title('Fig4 Dead Reckoning Filter (in deg/s)')
     plt.legend()
     ax12 = fig.add_subplot(3, 3, 5)
     ax12.plot(alls[0][1:],np.rad2deg(alls[2][0]),label="phiQ3",color="red")
     ax12.plot(alls[0][1:],np.rad2deg(alls[2][1]),label="thetaQ3",color="green")
     ax12.plot(alls[0][1:],np.rad2deg(alls[2][2]),label="psiQ3",color="purple")
-    ax12.set_title('Tilt Correction')
+    ax12.set_title('Fig5 Tilt Correction (in deg/s)')
     plt.legend()
     ax13 = fig.add_subplot(3, 3, 6)
     ax13.plot(alls[0][1:],np.rad2deg(alls[3][0]),label="phiQ4",color="red")
     ax13.plot(alls[0][1:],np.rad2deg(alls[3][1]),label="thetaQ4",color="green")
     ax13.plot(alls[0][1:],np.rad2deg(alls[3][2]),label="psiQ4",color="purple")
-    ax13.set_title('Yaw Correction')
+    ax13.set_title('Fig6 Yaw Correction (in deg/s)')
     plt.legend()
 
     ax1 = fig.add_subplot(3, 3, 7, projection='3d')
@@ -367,11 +366,11 @@ def plotter(in1,in2,in3,divisor,alls):
                 ax[eachInd].set_zlabel('Z')
 
                 if eachInd==0:
-                    ax[eachInd].set_title('gyro')
+                    ax[eachInd].set_title('Fig7 gyro (in deg/s)')
                 elif eachInd==1:
-                    ax[eachInd].set_title('gyro+acce')
+                    ax[eachInd].set_title('Fig8 gyro+acce (in deg/s)')
                 else:
-                    ax[eachInd].set_title('gyro+acce+magn')
+                    ax[eachInd].set_title('Fig9 gyro+acce+magn (in deg/s)')
 
             return x,y,z
         else:
