@@ -2,7 +2,6 @@ import pandas as pd,numpy as np,matplotlib.pyplot as plt,math as m,time as tt
 import mpl_toolkits.mplot3d.axes3d as p3
 import matplotlib.animation as animation
 
-
 """
     Question1
 """
@@ -34,12 +33,12 @@ def normalizer(comp,magn):
 "Question 1)i)"
 def toQuaternions(vx,vy,vz,theta):
     "According to [1], the implementation of quaternion convertion. Inputs x,y,z component and theta, returns [w,x,y,z]"
-    m.cos(theta/2), vx*m.sin(theta/2), vy*m.sin(theta/2), vz*m.sin(theta/2)
     return [m.cos(theta/2), vx*m.sin(theta/2), vy*m.sin(theta/2), vz*m.sin(theta/2)]
 
 "Question 1)ii)"
 def toEuler(each):
-    "Inputs each quaternion list [w,x,y,z], and returns their [psi,theta,phi] euler convertion. According to www."
+    "Inputs each quaternion list [w,x,y,z], and returns their [psi,theta,phi] euler convertion."
+    #http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/index.htm
     poles=each[1]*each[2] + each[3]*each[0]
     if poles <= 0.5 and poles >= -0.5:
         heading= m.atan2(2*each[2]*each[0]-2*each[1]*each[3] , 1 - 2*each[2]*each[2] - 2*each[3]*each[3])
@@ -114,9 +113,9 @@ def deadReckoningFilter():
     gyroNY=(gyroY/gyroM)[1:]
     gyroNZ=(gyroZ/gyroM)[1:]
 
-    "get the theta to convert to quaternion"
+    "get the theta angle from changing time to preprocess for quaternion conversion"
     theta=[]
-    for each in range(1,len(time)):#0
+    for each in range(1,len(time)):
         t=time[each]-time[each-1]
         calc=t*gyroM[each]
         theta.append(calc)
@@ -124,8 +123,9 @@ def deadReckoningFilter():
     estimate=[[1,0,0,0]]
 
     "implement drf estimation with init quaternion."
-    for each in range(len(time)-1):#0
-        qvt=toQuaternions(gyroNX[each],gyroNZ[each],-gyroNY[each],theta[each])#x,z,y
+    "As XYZ yields erratic behaviour, XZ-Y was set to fix the behaviour."
+    for each in range(len(time)-1):
+        qvt=toQuaternions(gyroNX[each],gyroNZ[each],-gyroNY[each],theta[each])
         estimate.append(qProd(estimate[each],qvt))
 
     "drawing dead reckoning filter results"
@@ -140,11 +140,12 @@ def deadReckoningFilter():
 
     resDRF=[resxx,resyx,reszx]
 
-    # plt.plot(time,np.rad2deg(resxx),label="phiq2",color="black")
-    # plt.plot(time,np.rad2deg(resyx),label="thetaq2",color="blue")
-    # plt.plot(time,np.rad2deg(reszx),label="psiq2",color="gray")
-    # plt.legend()
-    # plt.show()
+    plt.plot(time,np.rad2deg(resxx),label="phiq2",color="red")
+    plt.plot(time,np.rad2deg(resyx),label="thetaq2",color="green")
+    plt.plot(time,np.rad2deg(reszx),label="psiq2",color="purple")
+    plt.title("Dead Reckoning Filter")
+    plt.legend()
+    plt.show()
 
     "returns drf estimate result"
     return estimate,gyroM,resDRF
@@ -161,39 +162,35 @@ def tiltCorrection(estimate,alpha,acceM,gyroM):
     for each in estimate:
         newconjQ.append(conjQuot(each))
 
-
     "to convert the accelerometer data to global frame"
+    "As tilt correction requries for angle calculation between a^ and  y-axis; (like problem 2) X,Z,-Y was set to match axis rotations."
     acceM=acceM[1:]
     globalA=[]
     for each in range(len(acceM)):
         t=time[each+1]-time[each]
-        calc=t*gyroM[each]#may change?
-        avt=toQuaternions(acceX[each+1],acceY[each+1],acceZ[each+1],calc)
+        calc=t*gyroM[each]
+        avt=toQuaternions(acceX[each+1],acceZ[each+1],-acceY[each+1],calc)
         globalA.append(qProd(qProd(estimate[each],avt),newconjQ[each]))
 
-    "convert global data to euler forma again"
-    toEuAcce=[]
-    for each in globalA:
-        toEuAcce.append(toEuler(each))
-
     "calculate tilt axis"
-    project=[]
     tiltax=[]
-    for each in toEuAcce:
-        project.append(np.asarray([each[0],0,each[2]]))
-        tiltax.append(np.asarray([each[2],0,-each[0]]))
+    for each in globalA:
+        tiltax.append(np.asarray([each[3],0,-each[1]]))
 
-    "phi angle"
+    "phi angle."
     phi=[]
     phivec=np.asarray([0,1,0])
-    for each in toEuAcce:
-        normEach=magnitudeFinder(each[0],each[1],each[2])
-        phi.append(m.acos(np.dot(each,phivec) / normEach))
+    for each in globalA:#
+        normEach=magnitudeFinder(each[1],each[2],each[3])
+        phi.append(m.acos(np.dot(each[1:],phivec) / normEach))
 
+    plt.plot(time[1:],phi)
+    plt.title("Phi difference between a.")
+    plt.show()
     "complimentary filter for accelerometer correction"
     goodestimate=[]
     for each in range(len(time)-1):
-        qvt=toQuaternions(tiltax[each][0],0,tiltax[each][2],-alpha*phi[each])#x
+        qvt=toQuaternions(tiltax[each][0],tiltax[each][1],tiltax[each][2],-alpha*phi[each])#x
         goodestimate.append(qProd(qvt,estimate[each]))
 
 
@@ -207,12 +204,13 @@ def tiltCorrection(estimate,alpha,acceM,gyroM):
         resx.append(toEuler(each)[2])
         resy.append(-toEuler(each)[1])
         resz.append(toEuler(each)[0])
-    #
-    # plt.plot(time[1:],np.rad2deg(resx),label="phiq3",color="cyan")
-    # plt.plot(time[1:],np.rad2deg(resy),label="thetaq3",color="orange")
-    # plt.plot(time[1:],np.rad2deg(resz),label="psiq3",color="magenta")
-    # plt.legend()
-    # plt.show()
+
+    plt.plot(time[1:],np.rad2deg(resx),label="phiq3",color="red")
+    plt.plot(time[1:],np.rad2deg(resy),label="thetaq3",color="green")
+    plt.plot(time[1:],np.rad2deg(resz),label="psiq3",color="purple")
+    plt.title("Tilt Correction for alpha="+str(alpha))
+    plt.legend()
+    plt.show()
 
     resTilt=[resx,resy,resz]
     return goodestimate,resTilt
@@ -228,15 +226,14 @@ def yawCorrection(goodestimate,alpha,magnM):
         newMconjQ.append(conjQuot(each))
 
     "get magnetometer ref estimation calculation"
+    "As yaw correction requries for angle calculation between m^ and  y-axis; (like problem 2) X,Z,-Y was set to match axis rotations."
     mest=[]
     mdist=[]
     magnM=magnM[1:]
-    mref=qProd(qProd(newMconjQ[0],toQuaternions(magnX[0],magnY[0],magnZ[0],time[1]*gyroM[0])),goodestimate[0])
+    mref=qProd(qProd(goodestimate[0],toQuaternions(magnX[0],magnZ[0],-magnY[0],0)),newMconjQ[0])#
     for each in range(len(magnM)):
-        mest.append(qProd(qProd(newMconjQ[each],toQuaternions(magnX[each],magnY[each],magnZ[each],([each+1]-time[each])*gyroM[each])),goodestimate[each]))
-        mEuRef=toEuler(mref)
-        mEuEst=toEuler(mest[each])
-        mdist.append(magnitudeFinder(mEuRef[0],mEuRef[1],mEuRef[2])-magnitudeFinder(mEuEst[0],mEuEst[1],mEuEst[2]))
+        mest.append(qProd(qProd(goodestimate[each],toQuaternions(magnX[each],magnZ[each],-magnY[each],([each+1]-time[each])*gyroM[each])),newMconjQ[each]))
+        mdist.append(magnitudeFinder(mref[1],mref[2],mref[3])-magnitudeFinder(mest[each][1],mest[each][2],mest[each][3]))
 
     "get reference magnetometer, and do yaw correction"
     yawCfilt=[]
@@ -245,6 +242,10 @@ def yawCorrection(goodestimate,alpha,magnM):
         th=m.atan2(mest[each][1],mest[each][3])#x,z
         qvt=toQuaternions(0,1,0,-alpha*(th-thr))
         yawCfilt.append(qProd(qvt,goodestimate[each]))
+
+    plt.plot(time[1:],mdist,"bo")
+    plt.title("distance betwen mref and m' readings")
+    plt.show()
 
     "yaw corrected result plotting"
     ressx=[]
@@ -256,11 +257,12 @@ def yawCorrection(goodestimate,alpha,magnM):
         ressy.append(-toEuler(each)[1])
         ressz.append(toEuler(each)[0])
 
-    # plt.plot(time[1:],np.rad2deg(ressx),label="phiq4",color="red")
-    # plt.plot(time[1:],np.rad2deg(ressy),label="thetaq4",color="green")
-    # plt.plot(time[1:],np.rad2deg(ressz),label="psiq4",color="purple")
-    # plt.legend()
-    # plt.show()
+    plt.plot(time[1:],np.rad2deg(ressx),label="phiq4",color="red")
+    plt.plot(time[1:],np.rad2deg(ressy),label="thetaq4",color="green")
+    plt.plot(time[1:],np.rad2deg(ressz),label="psiq4",color="purple")
+    plt.title("Yaw Correction for alpha="+str(alpha))
+    plt.legend()
+    plt.show()
 
     resYaw=[ressx,ressy,ressz]
 
@@ -333,6 +335,10 @@ def plotter(in1,in2,in3,divisor,alls):
     axs=[ax1,ax2,ax3]
 
     def animate(i,ax,x,y,z):
+        ax[0].cla()
+        ax[1].cla()
+        ax[2].cla()
+        "real time framing by using python GIL"
         i=round(finalFr*((tt.time()-startingTime)/finalT)/divisor)
         if i<finalFr:
             for eachInd in range(3):
@@ -353,7 +359,7 @@ def plotter(in1,in2,in3,divisor,alls):
                 z[eachInd][1]=2*yData*zData-2*wData*xData
                 z[eachInd][2]=1-2*xData*xData-2*yData*yData
 
-                ax[eachInd].cla()
+                # ax[eachInd].cla()
                 ax[eachInd].quiver(0,0,0,x[eachInd][0],x[eachInd][1],x[eachInd][2],color="green")
                 ax[eachInd].quiver(0,0,0,y[eachInd][0],y[eachInd][1],y[eachInd][2],color="red")
                 ax[eachInd].quiver(0,0,0,z[eachInd][0],z[eachInd][1],z[eachInd][2],color="purple")
@@ -372,7 +378,6 @@ def plotter(in1,in2,in3,divisor,alls):
                 else:
                     ax[eachInd].set_title('Fig9 gyro+acce+magn (in deg/s)')
 
-            return x,y,z
         else:
             plt.close()
 
@@ -425,7 +430,7 @@ if __name__ == "__main__":
     print("Question 3-Tilt Correction..")
     goodestimate,resTilt=tiltCorrection(estimate,0.05,acceM,gyroM)
     print("Question 4-Yaw Correction..")
-    yawCfilt,resYaw=yawCorrection(goodestimate,0.05,magnM)
+    yawCfilt,resYaw=yawCorrection(goodestimate,0.001,magnM)
 
     print("Question 5:")
     "to plot figures for Question 5"
