@@ -54,3 +54,17 @@ hit_value=block_hash[:8]
 print("signed:",signed.hex())
 print("block_hash",block_hash)
 print("hit value:",hit_value)
+
+print("---")
+#T=Tb x time x eb
+
+# Target/(block_hash*effective_balance)=Time
+# 0x3e7fc180000000000000000000000000000000000000000000000000000
+"""
+signed: 2dd75f978179082acadc9d9e80e33d1c1f86da4b5591a267e3a851e980edae4c731e2db3aa88bed9f41e1e5d18fb30ddf55befe3ce903566826a9d428733498f
+block_hash 5ca1dc312444c4972c73ad9682122a490c88cf42bd5a0cac95695480a6bd2fc0
+hit value: 5ca1dc31
+---
+8.466376864752882e-09
+"""
+print(0x3e7fc180000000000000000000000000000000000000000000000000000/(int(block_hash,16)*effective_balance))
