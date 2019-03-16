@@ -35,36 +35,34 @@ sk = ecdsa.SigningKey.generate(curve=ecdsa.SECP256k1)
 vk = sk.get_verifying_key()
 sig = sk.sign(b'Hello world')
 
-signed=sig.hex()
 ver_key=vk.to_string().hex()
-print("sig in hex",signed)
-print("vk  in hex",ver_key)
+signed=sig.hex()
+print("sk  in hex",sk.to_string().hex())
+print("1.6) vk  in hex",ver_key)
+print("1.7) sig in hex",signed)
+
 
 print("---")
 "hit value calculation"
 "serialize the block"
-block_serialised = json.dumps(previous_block_header, sort_keys=True).encode()
+#maybe inside?
+# block_serialised = json.dumps(previous_block_header, sort_keys=True).encode()
 "sign it with secret key"
-signed=sk.sign(block_serialised)
+# signed=sk.sign(block_serialised)
+"gen block sign"
+signed=sk.sign(b'9737957703d4eb54efdff91e15343266123c5f15aaf033292c9903015af817f1')
 "double hash"
-block_hash=hashlib.sha256(hashlib.sha256(block_serialised).digest()).hexdigest()
+block_hash=hashlib.sha256(hashlib.sha256(signed).digest()).hexdigest()
 "fitst 8 byte is the hit value"
 hit_value=block_hash[:8]
 
-print("signed:",signed.hex())
+print("1.8) signature:",signed.hex())
 print("block_hash",block_hash)
-print("hit value:",hit_value)
+print("1.9) hit value:",hit_value)
 
 print("---")
 #T=Tb x time x eb
 
 # Target/(block_hash*effective_balance)=Time
 # 0x3e7fc180000000000000000000000000000000000000000000000000000
-"""
-signed: 2dd75f978179082acadc9d9e80e33d1c1f86da4b5591a267e3a851e980edae4c731e2db3aa88bed9f41e1e5d18fb30ddf55befe3ce903566826a9d428733498f
-block_hash 5ca1dc312444c4972c73ad9682122a490c88cf42bd5a0cac95695480a6bd2fc0
-hit value: 5ca1dc31
----
-8.466376864752882e-09
-"""
-print(0x3e7fc180000000000000000000000000000000000000000000000000000/(int(block_hash,16)*effective_balance))
+print(int(hit_value,16)/(1229782938247303*effective_balance))
