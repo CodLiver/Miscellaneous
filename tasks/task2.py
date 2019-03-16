@@ -1,5 +1,5 @@
 import hashlib
-import ecdsa
+import ecdsa,json
 
 # An the previous block header - do not change any fields
 previous_block_header = {
@@ -28,13 +28,29 @@ previous_block_header = {
 
 # you should edit the effective balance to be the last two digits from your user id
 effective_balance = 76
+#https://stackoverflow.com/questions/34451214/how-to-sign-and-verify-signature-with-ecdsa-in-python
+"prev"
+# SECP256k1 is the Bitcoin elliptic curve
+sk = ecdsa.SigningKey.generate(curve=ecdsa.SECP256k1)
+vk = sk.get_verifying_key()
+sig = sk.sign(b'Hello world')
 
+signed=sig.hex()
+ver_key=vk.to_string().hex()
+print("sig in hex",signed)
+print("vk  in hex",ver_key)
 
-
-
-"hit value calculation area"
-block_serialised = json.dumps(previous_block_headerr, sort_keys=True).encode()
-# Double SHA256 hashing of the serialised block
+print("---")
+"hit value calculation"
+"serialize the block"
+block_serialised = json.dumps(previous_block_header, sort_keys=True).encode()
+"sign it with secret key"
+signed=sk.sign(block_serialised)
+"double hash"
 block_hash=hashlib.sha256(hashlib.sha256(block_serialised).digest()).hexdigest()
+"fitst 8 byte is the hit value"
+hit_value=block_hash[:8]
 
-# T=
+print("signed:",signed.hex())
+print("block_hash",block_hash)
+print("hit value:",hit_value)
